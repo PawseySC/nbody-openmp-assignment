@@ -283,7 +283,6 @@ void get_tagential_velocity(const struct Options* opt, double mass, const double
     // Calculate the magnitude of the velocity
     // Note: We assume opt->grav_unit and opt->vlunittolunit are defined
     double vel = sqrt((opt->grav_unit) / (opt->vlunittolunit) * mass / rad);
-    srand(4224); // Sets the seed for random number generation
 
     // Determine which component to set to zero ---
     int izero[3] = {0, 0, 0}; // Array to store indices with value 0 in 'x'
@@ -298,12 +297,10 @@ void get_tagential_velocity(const struct Options* opt, double mass, const double
     // Logic to choose which component to set to zero
     // This implements the "permutation" logic from the Fortran code
     if (num_zeros == 0) {
-        k = floor(rand()*3.0);
+        double y, z;
+        k = floor(((double)rand()/((double)RAND_MAX))*3.0);
         i = (k+1)%3;
         j = (i+1)%3;
-        i = i+1;
-        j = j+1; 
-        k = k+1; 
         v[k] = 0;
         double fac = -x[i]/x[j];
         v[i] = 1.0 / sqrt((-fac*x[k])*(-fac*x[k]) + x[k]*x[k] + (x[i]*fac-x[j])*(x[i]*fac-x[j]));
@@ -589,7 +586,8 @@ void visualise_ascii(struct Options *opt, struct Particle *parts, int step) {
             fprintf(file, "%d %f ", step, opt->time);
         }
         
-        fprintf(file, "%d %f %f %f %f %f %f %f %f %f %f %f %d\n", 
+        fprintf(file, 
+            "%ld %f %f %f %f %f %f %f %f %e %e %e %ld\n", 
             parts[i].ID,
             parts[i].mass, parts[i].radius,
             parts[i].position[0], parts[i].position[1], parts[i].position[2], 
@@ -682,7 +680,7 @@ struct Particle * generate_rand_IC(struct Options *opt)
     }
 
     opt->massave /= opt->nparts;
-    printf("Done generating positions");
+    printf("Done generating positions \n");
     get_elapsed_time(time1); 
     return parts;
 }
@@ -696,6 +694,7 @@ struct Particle * generate_orbit_IC(struct Options *opt)
 {
     // generate random positions
     struct Particle *parts = generate_rand_IC(opt);
+    printf("Generating orbital velocities based on center of mass\n");
     struct timeval time1 = init_time();
     // Calculate center of mass (cmx) and total mass (mtot) ---
     double mtot = 0.0;
@@ -713,7 +712,6 @@ struct Particle * generate_orbit_IC(struct Options *opt)
     } else {
         printf("Warning: Total mass is zero; all particles have zero mass.\n");
     }
-
     // Calculate velocity for each particle ---
     double x[3], v[3];
     for (int i = 0; i < opt->nparts; i++) {
@@ -798,6 +796,8 @@ void run_state(struct Options *opt) {
     printf("time step: %.10e\n", opt->time_step);
     printf("grav in solar masses pc km^2/s^2: %.10e\n", opt->grav_unit);
     printf("collisional force unit in grav units: %.10e\n", opt->collision_unit);
+    printf("period in parsecs: %.10e\n", opt->period);
+    printf("Collisoinal radius factor: %.10e\n", opt->radiusfac);
     printf("Boundary rule type %d\n", opt->iboundarytype);
     printf("IC type %d\n", opt->iictype);
     printf("Time-step criterion %d\n", opt->itimestepcrit);
@@ -839,6 +839,7 @@ void run_state(struct Options *opt) {
     printf("====================================================\n");
 
 #endif
+    report_core_binding();
 }
 
 /**
@@ -853,28 +854,6 @@ void getinput(int argc, char *argv[], struct Options *opt) {
     opt->ivisualisetype = VisualiseType_VISUAL_ASCII;
     opt->initial_size = 1.0;
     opt->period = 0.0;
-    // and radius is 1/10th of the initial size of the box 
-    opt->radiusfac = 0.1/pow((double)opt->nparts, 1.0/3.0);
-    opt->munit = 1.0;
-    opt->vunit = 1.0; 
-    opt->lunit = 1.0; 
-    // conversion from km to pc 
-    opt->vlunittolunit = 3.24078e-14;
-    // grav in km/s^2 pc^2 / solar masses
-    opt->grav_unit = 4.30241002e-3 * opt->vlunittolunit;
-    // make time unit related to graviational unit in seconds
-    opt->tunit = 1.0/sqrt((opt->grav_unit *opt->vlunittolunit * opt->munit/pow(opt->initial_size, 3.0))) ;
-    // time step should be some fraction of the dynamical time of a close encounter the system which is related 
-    // to tunit by radiusfac **1.5
-    opt->time = 0;
-    opt->time_step_fac = 0.1;
-    // opt->time_step = opt->tunit * pow(opt->radiusfac, 1.5) * opt->time_step_fac;
-    opt->time_step = opt->tunit * opt->time_step_fac;
-    // make collisional (repulsive) force 10 times stronger than gravity 
-    // and is in units of gravitational forces 
-    opt->collision_unit = 4.0;
-    opt->seed = 4224;
-
     char c;
     while ((c = getopt (argc, argv, "n:t:B:I:V:r:")) != -1) {
         switch (c) {
@@ -912,6 +891,28 @@ void getinput(int argc, char *argv[], struct Options *opt) {
         usage();
         exit(EXIT_FAILURE);
     }
+    // and radius is 1/10th of the initial size of the box 
+    opt->radiusfac = 0.1/pow((double)opt->nparts, 1.0/3.0);
+    opt->munit = 1.0;
+    opt->vunit = 1.0; 
+    opt->lunit = 1.0; 
+    // conversion from km to pc 
+    opt->vlunittolunit = 3.24078e-14;
+    // grav in km/s^2 pc^2 / solar masses
+    opt->grav_unit = 4.30241002e-3 * opt->vlunittolunit;
+    // make time unit related to graviational unit in seconds
+    opt->tunit = 1.0/sqrt((opt->grav_unit *opt->vlunittolunit * opt->munit/pow(opt->initial_size, 3.0))) ;
+    // time step should be some fraction of the dynamical time of a close encounter the system which is related 
+    // to tunit by radiusfac **1.5
+    opt->time = 0;
+    opt->time_step_fac = 0.1;
+    // opt->time_step = opt->tunit * pow(opt->radiusfac, 1.5) * opt->time_step_fac;
+    opt->time_step = opt->tunit * opt->time_step_fac;
+    // make collisional (repulsive) force 10 times stronger than gravity 
+    // and is in units of gravitational forces 
+    opt->collision_unit = 4.0;
+    opt->seed = 4224;
+    srand(opt->seed); // Sets the seed for random number generation
     run_state(opt);
 }
 

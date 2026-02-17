@@ -215,7 +215,8 @@ void nbody_output(const struct Options *opt, const struct Particle *parts, int s
             return;
     }
     for (int i = 0; i < opt->nparts; i++) {
-        fprintf(fp, "%d %f | %d %f %f %f %f %f %f %f %f %f %f %d\n", 
+        fprintf(fp, 
+            "%d %f | %ld %f %f %f %f %f %f %f %f %e %e %e %ld\n", 
             step, opt->time,
             parts[i].ID,
             parts[i].mass, parts[i].radius,
