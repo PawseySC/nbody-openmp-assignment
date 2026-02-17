@@ -216,7 +216,7 @@ void nbody_output(const struct Options *opt, const struct Particle *parts, int s
     }
     for (int i = 0; i < opt->nparts; i++) {
         fprintf(fp, 
-            "%d %f | %ld %f %f %f %f %f %f %f %f %e %e %e %ld\n", 
+            "%d %f %ld %f %f %f %f %f %f %f %f %e %e %e %ld\n", 
             step, opt->time,
             parts[i].ID,
             parts[i].mass, parts[i].radius,
@@ -261,6 +261,7 @@ int main(int argc, char *argv[]) {
         velocity_update(&opt, parts);
         position_update(&opt, parts);
         get_elapsed_time(time2);
+        opt.time += opt.time_step;
         printf("Finished step %d moving %e in time to %e\n", step, opt.time_step, opt.time);
     }
     get_elapsed_time(time1);
