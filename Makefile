@@ -184,14 +184,14 @@ cpu_openmp_task_c : bin/02_nbody_cpu_openmp_task_c
 gpu_openmp : bin/02_nbody_gpu_openmp
 
 obj/common.o : src/common.f90 
-	$(FORT) $(COMMONFLAGS) $(FFLAGS) -c src/common.f90 -o obj/common.o
+	$(FORT) $(COMMONFLAGS) $(FFLAGS) $(OMP_FLAGS) -c src/common.f90 -o obj/common.o
 
 obj/common_c.o : src/common.h src/common.c 
 	$(CC) $(COMMONFLAGS) $(CFLAGS) -c src/common.c -o obj/common_c.o
 
 bin/01_nbody_cpu_serial : src/01_nbody_cpu_serial.f90 obj/common.o
 	$(FORT) $(COMMONFLAGS) $(FFLAGS) -c src/01_nbody_cpu_serial.f90 -o obj/01_nbody_cpu_serial.o
-	$(FORT) $(COMMONFLAGS) $(FFLAGS) -o bin/01_nbody_cpu_serial obj/01_nbody_cpu_serial.o obj/common.o
+	$(FORT) $(COMMONFLAGS) $(FFLAGS) $(OMP_FLAGS) -o bin/01_nbody_cpu_serial obj/01_nbody_cpu_serial.o obj/common.o
 
 bin/01_nbody_cpu_serial_c : src/common.h src/01_nbody_cpu_serial.c obj/common_c.o
 	$(CC) $(COMMONFLAGS) $(CFLAGS) -c src/01_nbody_cpu_serial.c -o obj/01_nbody_cpu_serial_c.o

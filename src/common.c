@@ -855,7 +855,7 @@ void getinput(int argc, char *argv[], struct Options *opt) {
     opt->initial_size = 1.0;
     opt->period = 0.0;
     char c;
-    while ((c = getopt (argc, argv, "n:t:B:I:V:r:")) != -1) {
+    while ((c = getopt (argc, argv, "n:t:B:I:T:V:r:")) != -1) {
         switch (c) {
             case 'n':
                 opt->nparts = atoi(optarg);
@@ -868,6 +868,9 @@ void getinput(int argc, char *argv[], struct Options *opt) {
                 break;
             case 'I':
                 opt->iictype = atoi(optarg);
+                break;
+            case 'T':
+                opt->itimestepcrit = atoi(optarg);
                 break;
             case 'V':
                 opt->ivisualisetype = atoi(optarg);

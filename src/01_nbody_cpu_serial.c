@@ -216,7 +216,7 @@ void nbody_output(const struct Options *opt, const struct Particle *parts, int s
     }
     for (int i = 0; i < opt->nparts; i++) {
         fprintf(fp, 
-            "%d %f %ld %f %f %f %f %f %f %f %f %e %e %e %ld\n", 
+            "%d %f %lld %f %f %f %f %f %f %f %f %e %e %e %lld\n", 
             step, opt->time,
             parts[i].ID,
             parts[i].mass, parts[i].radius,
@@ -245,8 +245,6 @@ int main(int argc, char *argv[]) {
 
     // Variables for timing
     struct timeval time1, time2;
-
-    // --- Step 3: The Main Simulation Loop ---
 
     printf("Running simulation for %d steps...\n", opt.nsteps);
     time1 = init_time();
