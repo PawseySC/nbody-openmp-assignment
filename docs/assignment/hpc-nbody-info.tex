@@ -65,7 +65,7 @@ The code that forms the basis of the assignment contains the following
 \begin{itemize}
 	\item basic files like a README, License
 	\item \texttt{Makefile} setup to compile codes with a variety of different flags and features. For a quick tutorial on GNU Make, see \href{https://www.gnu.org/software/make/}{here}. Students are expected to be familiar with Make and the associated commands. Please familiarise yourself with this material. 
-	\item source code in \texttt{src/*.f90} (\texttt{Fortran}). 
+	\item source code in \texttt{src/*.f90} (\texttt{Fortran}) and \texttt{src/*.c} (\texttt{C}). 
 	\item documentation and \LaTeX\ source code in \texttt{docs}
 	\item python scripts for visualisation. 
 \end{itemize}
@@ -98,7 +98,9 @@ make COMPILERTYPE=CRAY-GNU cpu_openmp
 
 
 \subsection{Source}
-The common function calls with interfaces are listed in \texttt{src/common.f90} provides a module with the same set of interfaces and subroutines. 
+The common function calls with interfaces are listed in \texttt{src/common.f90} provides a module with the same set of interfaces and subroutines. There is also a corresponding \texttt{src/common.c} and  \texttt{src/common.h} that contain the \texttt{C} implementations of these functions. 
+
+The \texttt{Fortran} interface is as follows:
 \begin{center}
 \begin{minipage}{0.95\textwidth}
 \small
@@ -139,6 +141,44 @@ end module
 \end{minipage}
 \end{center}
 
+The \texttt{C} interface is as follows:
+\begin{center}
+\begin{minipage}{0.95\textwidth}
+\small
+\begin{minted}[frame=single,]{c}
+struct Particle {
+    long long ID;
+    double mass;   
+    double radius;
+    double position[3];
+    double velocity[3]; 
+    double accel[3];    
+    long long PID;
+};
+
+void accel_update(struct Options *opt, struct Particle *parts);
+void position_update(const struct Options *opt, struct Particle *parts);
+void velocity_update(const struct Options *opt, struct Particle *parts);
+
+void visualise_ascii_mesh(struct Options *opt, struct Particle *parts, int step);
+void visualise_ascii(struct Options *opt, struct Particle *parts, int step);
+void visualise_none(int step);
+void visualise(struct Options *opt, struct Particle *parts, int step);
+
+struct Particle * generate_rand_IC(struct Options *opt);
+struct Particle * generate_orbit_IC(struct Options *opt);
+struct Particle * generate_IC(struct Options *opt);
+
+void getinput(int argc, char *argv[], struct Options *opt);
+
+struct timeval init_time();
+struct timeval get_elapsed_time(struct timeval start);
+
+\end{minted}
+\end{minipage}
+\end{center}
+
+
 \newpage
 The main program consists of : 
 \begin{center}
@@ -173,6 +213,41 @@ The main program consists of :
 \end{minted}
 \end{minipage}
 \end{center}
+
+The \texttt{C} version is similar but with the appropriate syntax.
+\begin{center}
+\begin{minipage}{0.95\textwidth}
+\begin{minted}[frame=single,]{c}
+int main(int argc, char *argv[]) {
+    struct Options opt;
+    getinput(argc, argv, &opt);
+    struct Particle *parts = generate_IC(&opt);
+    // Variables for timing
+    struct timeval time1, time2;
+    time1 = init_time();
+    
+    // Loop over each step in the simulation
+    for (int step = 0; step < opt.nsteps; step++) 
+    {
+        time2 = init_time();
+        visualise(&opt, parts, step);
+        nbody_output(&opt, parts, step);
+        accel_update(&opt, parts);
+        velocity_update(&opt, parts);
+        position_update(&opt, parts);
+        get_elapsed_time(time2);
+        opt.time += opt.time_step;
+        printf("Finished step %d moving %e in time to %e\n", step, opt.time_step, opt.time);
+    }
+    get_elapsed_time(time1);
+    free(parts);
+    return 0;
+}
+\end{minted}
+\end{minipage}
+\end{center}
+
+
 Implementations of the 3 main integration functions are present in the code. Familiarise yourself with these functions. 
 
 \par 
@@ -182,11 +257,13 @@ The code can be run with the following commands:
 \small
 \begin{minted}[frame=single,]{sh}
 make cpu_serial
-./bin/01_cpu_serial 
+./bin/01_cpu_serial # for fortran 
 Usage: <number of particles> <nsteps>
  [<Boundary type> <IC type> <Time Step Criterion> <Visualisation type> <Vis res>]
 # simulation of 1e3 particles in periodic box with adaptive time step for 100 steps  
-./bin/01_cpu_serial 1000 100 1 0 1  
+./bin/01_cpu_serial 1000 100 1 0 1
+# for C code, the usage is similar. Please run for details 
+./bin/01_cpu_serial_c -n 1000 -t 100 -B 1 -I 0 -T 1 
 \end{minted}
 	% \includegraphics[width=0.4\textwidth, valign=c, clip=true trim=40.cm 2.cm 20.cm 2.cm]{figs/nbody-scatter-plot.t-i.png}
 	% \includegraphics[width=0.4\textwidth, valign=c, clip=true trim=2.cm 2.cm 2.cm 2.cm]{figs/nbody-scatter-plot.t-f.png}

@@ -54,6 +54,8 @@ cp src/01_nbody_cpu_serial.f90 src/02_nbody_cpu_openmp_task.f90
 \end{minted}
 \end{minipage}
 \end{center}
+If using the \texttt{C} implementation, the source file is \texttt{01\_nbody\_cpu\_serial.c} and the new files should be \texttt{02\_nbody\_cpu\_openmp\_loop.c} and \texttt{02\_nbody\_cpu\_openmp\_task.c}.
+
 Profile the code using tools like gprof or just using the timing routines in-built in the code. 
 Here the example is for building on setonix.
 \begin{center}
@@ -92,7 +94,7 @@ In this way, you can compare results as you update the code, change the number o
 The code is not optimised serially. Please look at the code, particularly the main subroutines to improve the performance and show that this is the case. 
 
 \subsection{{\color{Red} Principle Task}: Implement OpenMP Parallelism\nopunct\\}\label{sec:tasks:omp}
-Perform an OpenMP parallelisation of the serial code, test performance and scaling. There are two main approaches, {\color{Orange}\textbf{Loop}} and {\color{Orange}\textbf{Task}} parallelism. This source code should be called \texttt{02\_cpu\_openmp\_loop.f90} or for task parallelism  \texttt{02\_cpu\_openmp\_task.f90}. One can 
+Perform an OpenMP parallelisation of the serial code, test performance and scaling. There are two main approaches, {\color{Orange}\textbf{Loop}} and {\color{Orange}\textbf{Task}} parallelism. This source code should be called \texttt{02\_cpu\_openmp\_loop.f90} or for task parallelism  \texttt{02\_cpu\_openmp\_task.f90} or the relevant \texttt{C} files if using the C implementation. You can implement either or both. If you implement both, bonus marks will be awarded. 
 
 The code should contain extensive \textbf{\textit{comments}}, noting what you are doing \textit{and why}. I will compile your code using the appropriate \texttt{make} command.
 {\centering \textit{You must show that the code produces correct results regardless of the number of OpenMP threads used. This can be checked with the output file.}}
