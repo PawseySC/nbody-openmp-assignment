@@ -160,9 +160,10 @@ makecommands :
 	$(info )
 	$(info gpu_openmp : compiles Fortran verisons gpu parallelised openmp codes.)
 	$(info ----------------------------------------)
-	$(info NOTE:: You can append to the make argument _cc or  to only compile the c or fortran versions.)
+	$(info NOTE:: You can append to the make argument _c or _fort to only compile the c or fortran versions.)
 	$(info For example)
-	$(info cpu_serial_cc : compiles ONLY C version of serial code. )
+	$(info cpu_serial_c : compiles ONLY C version of serial code. )
+	$(info cpu_serial_fort : compiles ONLY Fortran version of serial code. )
 	$(info ========================================)
 	$(info )
 
@@ -174,10 +175,14 @@ clean :
 	rm -f nbody_common.mod
 
 # just make an easier make name to remember
-cpu_serial : bin/01_nbody_cpu_serial bin/01_nbody_cpu_serial_c
-cpu_openmp : cpu_openmp_loop cpu_openmp_task cpu_openmp_loop_c cpu_openmp_task_c
-cpu_openmp_loop : bin/02_nbody_cpu_openmp_loop
-cpu_openmp_task : bin/02_nbody_cpu_openmp_task
+cpu_serial : bin/01_nbody_cpu_serial_fort bin/01_nbody_cpu_serial_c
+cpu_serial_fort : bin/01_nbody_cpu_serial_fort 
+cpu_serial_c : bin/01_nbody_cpu_serial_c
+cpu_openmp : cpu_openmp_loop cpu_openmp_task
+cpu_openmp_loop : cpu_openmp_loop_fort cpu_openmp_loop_c
+cpu_openmp_task : cpu_openmp_task_fort cpu_openmp_task_c
+cpu_openmp_loop_fort : bin/02_nbody_cpu_openmp_loop_fort 
+cpu_openmp_task_fort : bin/02_nbody_cpu_openmp_task_fort
 cpu_openmp_loop_c : bin/02_nbody_cpu_openmp_loop_c
 cpu_openmp_task_c : bin/02_nbody_cpu_openmp_task_c
 # gpu related 
@@ -189,7 +194,7 @@ obj/common.o : src/common.f90
 obj/common_c.o : src/common.h src/common.c 
 	$(CC) $(COMMONFLAGS) $(CFLAGS) -c src/common.c -o obj/common_c.o
 
-bin/01_nbody_cpu_serial : src/01_nbody_cpu_serial.f90 obj/common.o
+bin/01_nbody_cpu_serial_fort : src/01_nbody_cpu_serial.f90 obj/common.o
 	$(FORT) $(COMMONFLAGS) $(FFLAGS) -c src/01_nbody_cpu_serial.f90 -o obj/01_nbody_cpu_serial.o
 	$(FORT) $(COMMONFLAGS) $(FFLAGS) $(OMP_FLAGS) -o bin/01_nbody_cpu_serial obj/01_nbody_cpu_serial.o obj/common.o
 
@@ -205,24 +210,24 @@ obj/common_c_omp.o : src/common.h src/common.c
 	$(CC) $(COMMONFLAGS) $(CFLAGS) $(OMP_FLAGS) -c src/common.c -o obj/common_c_omp.o
 
 # fortran openmp codes
-bin/02_nbody_cpu_openmp_loop : src/02_nbody_cpu_openmp_loop.f90 obj/common_omp.o
+bin/02_nbody_cpu_openmp_loop_fort : src/02_nbody_cpu_openmp_loop.f90 obj/common_omp.o
 	$(OMPFORT) $(OMP_FLAGS) $(COMMONFLAGS) $(FFLAGS) -c src/02_nbody_cpu_openmp_loop.f90 -o obj/02_nbody_cpu_openmp_loop.o
-	$(OMPFORT) $(OMP_FLAGS) $(COMMONFLAGS) $(FFLAGS) -o bin/02_nbody_cpu_openmp_loop obj/02_nbody_cpu_openmp_loop.o obj/common.o
+	$(OMPFORT) $(OMP_FLAGS) $(COMMONFLAGS) $(FFLAGS) -o bin/02_nbody_cpu_openmp_loop_fort obj/02_nbody_cpu_openmp_loop.o obj/common_omp.o
 
-bin/02_nbody_cpu_openmp_task : src/02_nbody_cpu_openmp_task.f90 obj/common_omp.o
+bin/02_nbody_cpu_openmp_task_fort : src/02_nbody_cpu_openmp_task.f90 obj/common_omp.o
 	$(OMPFORT) $(OMP_FLAGS) $(COMMONFLAGS) $(FFLAGS) -c src/02_nbody_cpu_openmp_task.f90 -o obj/02_nbody_cpu_openmp_task.o
-	$(OMPFORT) $(OMP_FLAGS) $(COMMONFLAGS) $(FFLAGS) -o bin/02_nbody_cpu_openmp_task obj/02_nbody_cpu_openmp_task.o obj/common.o
+	$(OMPFORT) $(OMP_FLAGS) $(COMMONFLAGS) $(FFLAGS) -o bin/02_nbody_cpu_openmp_task_forta obj/02_nbody_cpu_openmp_task.o obj/common_omp.o
 
 # c version of openmp codes
 bin/02_nbody_cpu_openmp_loop_c : src/common.h src/02_nbody_cpu_openmp_loop.c obj/common_c_omp.o
 	$(CC) $(COMMONFLAGS) $(CFLAGS) $(OMP_FLAGS) -c src/02_nbody_cpu_openmp_loop.c -o obj/02_nbody_cpu_openmp_loop_c.o
-	$(CC) $(COMMONFLAGS) $(CFLAGS) $(OMP_FLAGS) -o bin/02_nbody_cpu_openmp_loop_c obj/02_nbody_cpu_openmp_loop_c.o obj/common_c.o
+	$(CC) $(COMMONFLAGS) $(CFLAGS) $(OMP_FLAGS) -o bin/02_nbody_cpu_openmp_loop_c obj/02_nbody_cpu_openmp_loop_c.o obj/common_c_omp.o
 
 bin/02_nbody_cpu_openmp_task_c : src/common.h src/02_nbody_cpu_openmp_task.c obj/common_c_omp.o
 	$(CC) $(COMMONFLAGS) $(CFLAGS) $(OMP_FLAGS) -c src/02_nbody_cpu_openmp_task.c -o obj/02_nbody_cpu_openmp_task_c.o
-	$(CC) $(COMMONFLAGS) $(CFLAGS) $(OMP_FLAGS) -o bin/02_nbody_cpu_openmp_task_c obj/02_nbody_cpu_openmp_task_c.o obj/common_c.o
+	$(CC) $(COMMONFLAGS) $(CFLAGS) $(OMP_FLAGS) -o bin/02_nbody_cpu_openmp_task_c obj/02_nbody_cpu_openmp_task_c.o obj/common_c_omp.o
 
 # gpu related
-bin/02_nbody_gpu_openmp : src/02_nbody_gpu_openmp.f90 obj/common.o
+bin/02_nbody_gpu_openmp : src/02_nbody_gpu_openmp.f90 obj/common_omp.o
 	$(OMPFORT) $(OMP_FLAGS) $(COMMONFLAGS) $(FFLAGS) -c src/02_nbody_gpu_openmp.f90 -o obj/02_nbody_gpu_openmp.o
-	$(OMPFORT) $(OMP_FLAGS) $(COMMONFLAGS) $(FFLAGS) -o bin/02_nbody_gpu_openmp obj/02_nbody_gpu_openmp.o obj/common.o
+	$(OMPFORT) $(OMP_FLAGS) $(COMMONFLAGS) $(FFLAGS) -o bin/02_nbody_gpu_openmp obj/02_nbody_gpu_openmp.o obj/common_omp.o

@@ -48,13 +48,13 @@ void report_memory_usage(char where[1000])
 
     usage.mem[0] = usage.mem[1] = usage.mem[2] = usage.mem[3] = -1; // default to -1 for Apple systems
 
+    #ifndef __APPLE__
     const char *stat_file = "/proc/self/status";
     FILE *fp;
     char line[10000] = {0};
     char searchstr[4][100] = {"VmSize:", "VmPeak:", "VmRSS:", "VmHWM:"};
     char tmpstr[100];
     int i;
-    #ifndef __APPLE__
     fp = fopen (stat_file, "r");
     if (! fp) {
         printf("========================================================= \n");
@@ -73,14 +73,14 @@ void report_memory_usage(char where[1000])
         }
     }
     fclose(fp);
-    #else
-    printf("Mem reporting still in dev for Apple systems. Results will all be -1\n");
-    #endif
     printf("========================================================= \n");
     printf("Memory Usage @ %s \n (VM, Peak VM, RSS, Peak RSS) = (%zu, %zu, %zu, %zu) kilobytes \n", 
         where, usage.mem[0], usage.mem[1], usage.mem[2], usage.mem[3]);
     printf("========================================================= \n");
     printf(" \n");
+    #else
+    printf("Mem reporting still in dev for Apple systems. Results will all be -1\n");
+    #endif
 }
 
 #ifdef __APPLE__
@@ -187,7 +187,8 @@ void report_core_binding()
     //and this processes' rank is
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 #else 
-    rank=0, size=1;
+    rank=0;
+    size=1;
 #endif
     char binding_report[10*1024+256] = {"Core binding report:\n "};
 #ifdef __APPLE__
@@ -587,7 +588,7 @@ void visualise_ascii(struct Options *opt, struct Particle *parts, int step) {
         }
         
         fprintf(file, 
-            "%ld %f %f %f %f %f %f %f %f %e %e %e %ld\n", 
+            "%lld %f %f %f %f %f %f %f %f %e %e %e %lld\n", 
             parts[i].ID,
             parts[i].mass, parts[i].radius,
             parts[i].position[0], parts[i].position[1], parts[i].position[2], 

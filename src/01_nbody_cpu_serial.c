@@ -103,14 +103,13 @@ void accel_update(struct Options *opt, struct Particle *parts) {
  * @param parts A pointer to an array of particle structures (will be modified).
  */
 void velocity_update(const struct Options *opt, struct Particle *parts) {
-    // --- Initialize variables ---
-    struct timeval time1 = init_time(); // Assume this function is declared in nbody_common.h
-    
-    double dkin_min = HUGE_VAL; // C's macro for "huge" value
+    struct timeval time1 = init_time(); 
+    double dkin_min = HUGE_VAL; 
     double dkin_max = 0.0;
     double dkin_ave = 0.0;
 
-    // --- Main loop over all particles ---
+    // calculate velocity updates
+    // along with min, max, and average change in kinetic energy
     for (int i = 0; i < opt->nparts; i++) 
     { 
         // Update velocities by determining velocity change 
@@ -128,20 +127,15 @@ void velocity_update(const struct Options *opt, struct Particle *parts) {
         }
         double current_dkin = (vel_sq > 1e-12) ? dkin_num / vel_sq : 0.0;
 
-        // 5. Update min, max, and average dkin
         dkin_min = (current_dkin < dkin_min) ? current_dkin : dkin_min;
         dkin_max = (current_dkin > dkin_max) ? current_dkin : dkin_max;
         dkin_ave += current_dkin;
     }
-
-    // 6. Calculate the average dkin
     dkin_ave /= opt->nparts;
 
-    // --- Output (replace with your logging mechanism if needed) ---
     printf("Finished calculating velocity\n");
     printf("Particles specific kinetic energy changed by [min, ave, max]: %e %e %e\n", 
            dkin_min, dkin_ave, dkin_max);
-
     get_elapsed_time(time1);
 }
 
@@ -151,18 +145,16 @@ void velocity_update(const struct Options *opt, struct Particle *parts) {
  * @param parts A pointer to an array of particle structures (will be modified).
  */
 void position_update(const struct Options *opt, struct Particle *parts) {
-    // --- Initialize variables ---
-    struct timeval time1 = init_time(); // Assume this function is declared in nbody_common.h
-    
     double *rads = malloc(opt->nparts * sizeof(double)); 
+    struct timeval time1 = init_time(); 
     double rad_average = 0.0;
     double rmin = HUGE_VAL; 
     double rmax = 0.0;
 
-    // --- Main loop over all particles ---
-    for (int i = 0; i < opt->nparts; i++) { 
-        
-        // Calculate delta position (parts(i)%velocity * opt%time_step * opt%vlunittolunit)
+    // calculate position updates and get min, max, and average change in position
+    for (int i = 0; i < opt->nparts; i++) 
+    {         
+        // Calculate delta position 
         double delta[3];
         for (int k = 0; k < 3; k++) {
             delta[k] = parts[i].velocity[k] * opt->time_step * opt->vlunittolunit;
@@ -174,25 +166,20 @@ void position_update(const struct Options *opt, struct Particle *parts) {
             (delta[0]*delta[0]) + 
             (delta[1]*delta[1]) +
             (delta[2]*delta[2]);
-        double n_pow_inv_third = 1.0 / pow((double)opt->nparts, 1.0 / 3.0);
-        double denominator = opt->initial_size / n_pow_inv_third;
-        rads[i] = sqrt(norm_delta_squared) / denominator;
+        rads[i] = sqrt(norm_delta_squared) / (opt->initial_size / pow((double)opt->nparts, 1.0 / 3.0));
         rad_average += rads[i];
     }
     rad_average /= opt->nparts;
 
-    // 7. Find min and max of rads
+    // Find min and max of rads
     for (int i = 0; i < opt->nparts; i++) {
         rmin = (rads[i] < rmin) ? rads[i] : rmin;
         rmax = (rads[i] > rmax) ? rads[i] : rmax;
     }
 
-    // --- Output (replace with your logging mechanism if needed) ---
     printf("Finished calculating position\n");
     printf("Particles moved by [min, ave, max]: %e %e %e\n", 
            rmin, rad_average, rmax);
-
-    // --- Elapsed time ---
     get_elapsed_time(time1);
     free(rads); 
 }

@@ -174,7 +174,7 @@ subroutine position_update(opt, parts)
         !print *, "Looking at position update"
         do i = 1, opt%nparts
                 delta = parts(i)%velocity * opt%time_step * opt%vlunittolunit
-                rads(i) = (delta(1)**2.0+delta(2)**2.0+delta(3)**2.0)/(opt%initial_size/opt%nparts**(1.0/3.0))
+                rads(i) = sqrt(delta(1)**2.0+delta(2)**2.0+delta(3)**2.0)/(opt%initial_size/opt%nparts**(1.0/3.0))
                 rad_average = rad_average + rads(i)
                 parts(i)%position = parts(i)%position + parts(i)%velocity * opt%time_step * opt%vlunittolunit
                 call period_wrap(opt, parts(i)%position)
