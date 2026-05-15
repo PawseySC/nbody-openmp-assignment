@@ -325,13 +325,10 @@ void get_tagential_velocity(const struct Options* opt, double mass, const double
  */
 void period_wrap(double period, double pos1[]) {
     if (period > 0) {
-        // Calculate the factor to add
-        double fac = -floor(pos1[0] / period) * period;
-        
-        // Wrap each component
-        pos1[0] += fac;
-        pos1[1] += fac;
-        pos1[2] += fac;
+         for (int i = 0; i < 3; i++) {
+            double fac = -floor(pos1[i] / period) * period;
+            pos1[i] += fac;
+        }
     }
 }
 
