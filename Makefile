@@ -32,7 +32,7 @@ CRAYCXX = CC
 CRAYFORT = ftn 
 
 # C flags. Currently only really need to enforce c11 standard
-GCCCFLAGS = -std=c11
+GCCCFLAGS = -std=c11 -D_GNU_SOURCE -lm
 
 # fortran flags 
 GCCFFLAGS = -cpp -ffixed-line-length-none -dM

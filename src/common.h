@@ -8,20 +8,24 @@
 
 #include <assert.h>
 #include <float.h>
+#include <getopt.h>
 #include <math.h>
 #include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <unistd.h>
+
 #ifdef __APPLE__
 #include <sys/sysctl.h>
 #endif
 #ifndef __APPLE__
 #include <sys/sysinfo.h>
 #endif
-#include <unistd.h>
+
 #ifdef USEOPENMP
 #include <omp.h>
 #endif
