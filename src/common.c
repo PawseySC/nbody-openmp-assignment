@@ -757,7 +757,7 @@ void usage() {
     printf("Boundary type: 0 non-periodic (default), 1 periodic\n");
     printf("IC type: 0 random (default), 1 orbiting (useful for few-body systems)\n");
     printf("Time Step Criterion: 0 static, 1 adaptive (default)\n");
-    printf("Visualisation type: 0 none (default), 1 projected density mesh as ascii\n");
+    printf("Visualisation type: 0 none (default), 1 ascii output, 2 projected density mesh as ascii\n");
     printf("Vis res: valid for vis type 1, mesh resolution\n");
     printf("---------------------------------------------------\n");
 }
@@ -906,6 +906,8 @@ void getinput(int argc, char *argv[], struct Options *opt) {
     // make collisional (repulsive) force 10 times stronger than gravity 
     // and is in units of gravitational forces 
     opt->collision_unit = 4.0;
+    // set period to initial size of the box if periodic, otherwise 0
+    opt->period = (opt->iboundarytype == BoundaryType_BOUNDARY_PERIODIC) ? opt->initial_size : 0.0;
     opt->seed = 4224;
     srand(opt->seed); // Sets the seed for random number generation
     run_state(opt);
