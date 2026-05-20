@@ -575,15 +575,6 @@ void visualise_ascii(struct Options *opt, struct Particle *parts, int step) {
 
     // Write data to the file
     for (int i = 0; i < opt->nparts; i++) {
-        // In Fortran, the array is 1-based, so we start writing from index 1
-        if (i == 0) {
-            fprintf(file, "%d %f ", step, opt->time);
-        } else {
-            // For subsequent particles in the same step, just append them
-            fprintf(file, "%s", "\n");
-            fprintf(file, "%d %f ", step, opt->time);
-        }
-        
         fprintf(file, 
             "%lld %f %f %f %f %f %f %f %f %e %e %e %lld\n", 
             parts[i].ID,
@@ -872,6 +863,9 @@ void getinput(int argc, char *argv[], struct Options *opt) {
                 break;
             case 'V':
                 opt->ivisualisetype = atoi(optarg);
+                break;
+            case 'r':
+                opt->vis_res = atoi(optarg);
                 break;
             case '?':
                 printf("Unknown option\n");
